@@ -1,0 +1,1 @@
+export { useHistoriesStore } from './historiesStore';
