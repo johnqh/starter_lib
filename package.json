@@ -1,6 +1,6 @@
 {
   "name": "@sudobility/starter_lib",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Business logic library for Starter with Zustand stores",
   "type": "module",
   "main": "dist/index.js",
@@ -41,7 +41,7 @@
     "zustand": ">=5.0.0"
   },
   "devDependencies": {
-    "@sudobility/starter_client": "^0.0.1",
+    "@sudobility/starter_client": "^0.0.2",
     "@sudobility/starter_types": "^0.0.1",
     "@sudobility/types": "^1.9.50",
     "@tanstack/react-query": "^5.90.5",
