@@ -1,6 +1,6 @@
 {
   "name": "@sudobility/starter_lib",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Business logic library for Starter with Zustand stores",
   "type": "module",
   "main": "dist/index.js",
@@ -35,7 +35,7 @@
   "author": "Sudobility",
   "license": "BUSL-1.1",
   "peerDependencies": {
-    "@sudobility/types": "^1.9.53",
+    "@sudobility/types": "^1.9.54",
     "@tanstack/react-query": ">=5.0.0",
     "react": ">=18.0.0",
     "zustand": ">=5.0.0"
@@ -43,7 +43,7 @@
   "devDependencies": {
     "@sudobility/starter_client": "^0.0.2",
     "@sudobility/starter_types": "^0.0.1",
-    "@sudobility/types": "^1.9.53",
+    "@sudobility/types": "^1.9.54",
     "@tanstack/react-query": "^5.90.5",
     "@types/react": "^19.2.2",
     "react": "^19.2.1",
