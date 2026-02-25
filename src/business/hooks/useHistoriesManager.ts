@@ -7,11 +7,7 @@ import type {
   Optional,
 } from '@sudobility/starter_types';
 import type { FirebaseIdToken } from '@sudobility/starter_client';
-import {
-  useHistories,
-  useHistoriesTotal,
-  useHistoryMutations,
-} from '@sudobility/starter_client';
+import { useHistories, useHistoriesTotal } from '@sudobility/starter_client';
 import { useHistoriesStore } from '../stores/historiesStore';
 import { calculatePercentage } from '../utils/calculations';
 
@@ -224,7 +220,13 @@ export const useHistoriesManager = ({
     histories: clientHistories,
     isLoading: historiesLoading,
     error: historiesError,
-    refetch,
+    update,
+    createHistory: clientCreate,
+    updateHistory: clientUpdate,
+    deleteHistory: clientDelete,
+    isCreating,
+    isUpdating,
+    isDeleting,
   } = useHistories(networkClient, baseUrl, userId ?? null, token ?? null);
 
   const {
@@ -232,21 +234,6 @@ export const useHistoriesManager = ({
     isLoading: totalLoading,
     error: totalError,
   } = useHistoriesTotal(networkClient, baseUrl);
-
-  const {
-    createHistory: clientCreate,
-    updateHistory: clientUpdate,
-    deleteHistory: clientDelete,
-    isCreating,
-    isUpdating,
-    isDeleting,
-    error: mutationError,
-  } = useHistoryMutations(
-    networkClient,
-    baseUrl,
-    userId ?? null,
-    token ?? null
-  );
 
   const cacheEntry = useHistoriesStore(
     useCallback(state => (userId ? state.cache[userId] : undefined), [userId])
@@ -331,7 +318,7 @@ export const useHistoriesManager = ({
 
   const isLoading =
     historiesLoading || totalLoading || isCreating || isUpdating || isDeleting;
-  const error = historiesError ?? totalError ?? mutationError ?? null;
+  const error = historiesError ?? totalError ?? null;
 
   const hasAttemptedFetchRef = useRef(false);
 
@@ -344,9 +331,9 @@ export const useHistoriesManager = ({
       !hasAttemptedFetchRef.current
     ) {
       hasAttemptedFetchRef.current = true;
-      refetch();
+      update();
     }
-  }, [autoFetch, token, userId, histories.length, refetch]);
+  }, [autoFetch, token, userId, histories.length, update]);
 
   useEffect(() => {
     hasAttemptedFetchRef.current = false;
@@ -364,7 +351,7 @@ export const useHistoriesManager = ({
       createHistory,
       updateHistory,
       deleteHistory,
-      refresh: refetch,
+      refresh: update,
     }),
     [
       histories,
@@ -377,7 +364,7 @@ export const useHistoriesManager = ({
       createHistory,
       updateHistory,
       deleteHistory,
-      refetch,
+      update,
     ]
   );
 };

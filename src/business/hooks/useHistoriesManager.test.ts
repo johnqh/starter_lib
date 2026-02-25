@@ -7,7 +7,7 @@ import type { UseHistoriesManagerConfig } from './useHistoriesManager';
 
 // --- Mocks ---
 
-const mockRefetch = vi.fn();
+const mockUpdate = vi.fn();
 const mockClientCreate = vi.fn();
 const mockClientUpdate = vi.fn();
 const mockClientDelete = vi.fn();
@@ -16,7 +16,14 @@ let mockHistoriesReturn = {
   histories: [] as History[],
   isLoading: false,
   error: null as string | null,
-  refetch: mockRefetch,
+  update: mockUpdate,
+  createHistory: mockClientCreate,
+  updateHistory: mockClientUpdate,
+  deleteHistory: mockClientDelete,
+  isCreating: false,
+  isUpdating: false,
+  isDeleting: false,
+  clearError: vi.fn(),
 };
 
 let mockTotalReturn = {
@@ -25,20 +32,9 @@ let mockTotalReturn = {
   error: null as string | null,
 };
 
-let mockMutationsReturn = {
-  createHistory: mockClientCreate,
-  updateHistory: mockClientUpdate,
-  deleteHistory: mockClientDelete,
-  isCreating: false,
-  isUpdating: false,
-  isDeleting: false,
-  error: null as string | null,
-};
-
 vi.mock('@sudobility/starter_client', () => ({
   useHistories: () => mockHistoriesReturn,
   useHistoriesTotal: () => mockTotalReturn,
-  useHistoryMutations: () => mockMutationsReturn,
 }));
 
 // Import after mocks are set up
@@ -72,7 +68,7 @@ const defaultConfig: UseHistoriesManagerConfig = {
 describe('useHistoriesManager', () => {
   beforeEach(() => {
     useHistoriesStore.getState().clearAll();
-    mockRefetch.mockClear();
+    mockUpdate.mockClear();
     mockClientCreate.mockClear();
     mockClientUpdate.mockClear();
     mockClientDelete.mockClear();
@@ -81,20 +77,18 @@ describe('useHistoriesManager', () => {
       histories: [],
       isLoading: false,
       error: null,
-      refetch: mockRefetch,
-    };
-    mockTotalReturn = {
-      total: 0,
-      isLoading: false,
-      error: null,
-    };
-    mockMutationsReturn = {
+      update: mockUpdate,
       createHistory: mockClientCreate,
       updateHistory: mockClientUpdate,
       deleteHistory: mockClientDelete,
       isCreating: false,
       isUpdating: false,
       isDeleting: false,
+      clearError: vi.fn(),
+    };
+    mockTotalReturn = {
+      total: 0,
+      isLoading: false,
       error: null,
     };
   });
@@ -224,7 +218,7 @@ describe('useHistoriesManager', () => {
     });
 
     it('should aggregate loading from mutations', () => {
-      mockMutationsReturn.isCreating = true;
+      mockHistoriesReturn.isCreating = true;
 
       const { result } = renderHook(() => useHistoriesManager(defaultConfig));
       expect(result.current.isLoading).toBe(true);
@@ -251,17 +245,16 @@ describe('useHistoriesManager', () => {
       expect(result.current.error).toBe('Failed to fetch total');
     });
 
-    it('should surface mutation error when no other errors', () => {
-      mockMutationsReturn.error = 'Mutation failed';
+    it('should surface histories error (which includes mutation errors)', () => {
+      mockHistoriesReturn.error = 'Mutation failed';
 
       const { result } = renderHook(() => useHistoriesManager(defaultConfig));
       expect(result.current.error).toBe('Mutation failed');
     });
 
-    it('should prioritize histories error over others', () => {
+    it('should prioritize histories error over total error', () => {
       mockHistoriesReturn.error = 'Histories error';
       mockTotalReturn.error = 'Total error';
-      mockMutationsReturn.error = 'Mutation error';
 
       const { result } = renderHook(() => useHistoriesManager(defaultConfig));
       expect(result.current.error).toBe('Histories error');
@@ -431,7 +424,7 @@ describe('useHistoriesManager', () => {
   });
 
   describe('autoFetch behavior', () => {
-    it('should call refetch when autoFetch is true and conditions are met', () => {
+    it('should call update when autoFetch is true and conditions are met', () => {
       renderHook(() =>
         useHistoriesManager({
           ...defaultConfig,
@@ -439,10 +432,10 @@ describe('useHistoriesManager', () => {
         })
       );
 
-      expect(mockRefetch).toHaveBeenCalledTimes(1);
+      expect(mockUpdate).toHaveBeenCalledTimes(1);
     });
 
-    it('should not call refetch when autoFetch is false', () => {
+    it('should not call update when autoFetch is false', () => {
       renderHook(() =>
         useHistoriesManager({
           ...defaultConfig,
@@ -450,10 +443,10 @@ describe('useHistoriesManager', () => {
         })
       );
 
-      expect(mockRefetch).not.toHaveBeenCalled();
+      expect(mockUpdate).not.toHaveBeenCalled();
     });
 
-    it('should not call refetch when token is null', () => {
+    it('should not call update when token is null', () => {
       renderHook(() =>
         useHistoriesManager({
           ...defaultConfig,
@@ -462,10 +455,10 @@ describe('useHistoriesManager', () => {
         })
       );
 
-      expect(mockRefetch).not.toHaveBeenCalled();
+      expect(mockUpdate).not.toHaveBeenCalled();
     });
 
-    it('should not call refetch when userId is null', () => {
+    it('should not call update when userId is null', () => {
       renderHook(() =>
         useHistoriesManager({
           ...defaultConfig,
@@ -474,10 +467,10 @@ describe('useHistoriesManager', () => {
         })
       );
 
-      expect(mockRefetch).not.toHaveBeenCalled();
+      expect(mockUpdate).not.toHaveBeenCalled();
     });
 
-    it('should not call refetch when histories already exist', () => {
+    it('should not call update when histories already exist', () => {
       mockHistoriesReturn.histories = [makeHistory()];
 
       renderHook(() =>
@@ -487,17 +480,17 @@ describe('useHistoriesManager', () => {
         })
       );
 
-      expect(mockRefetch).not.toHaveBeenCalled();
+      expect(mockUpdate).not.toHaveBeenCalled();
     });
   });
 
   describe('refresh function', () => {
-    it('should expose refetch as refresh', () => {
+    it('should expose update as refresh', () => {
       const { result } = renderHook(() => useHistoriesManager(defaultConfig));
       act(() => {
         result.current.refresh();
       });
-      expect(mockRefetch).toHaveBeenCalled();
+      expect(mockUpdate).toHaveBeenCalled();
     });
   });
 });
